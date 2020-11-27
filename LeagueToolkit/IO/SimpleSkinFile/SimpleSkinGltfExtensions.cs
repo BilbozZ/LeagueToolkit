@@ -112,7 +112,7 @@ namespace LeagueToolkit.IO.SimpleSkinFile
                     VERTEX_SKINNED b = vertices[submesh.Indices[i + 1]];
                     VERTEX_SKINNED c = vertices[submesh.Indices[i + 2]];
 
-                    submeshPrimitive.AddTriangle(c, b, a);
+                    submeshPrimitive.AddTriangle(a, b, c);
                 }
             }
 
