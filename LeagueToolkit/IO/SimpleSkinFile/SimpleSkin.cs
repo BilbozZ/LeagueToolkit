@@ -177,7 +177,7 @@ namespace LeagueToolkit.IO.SimpleSkinFile
                         bw.Write(index);
                     }
 
-                    indexOffset += submesh.Indices.Max();
+                    indexOffset += (ushort)(submesh.Vertices.Count);
                 }
 
                 foreach (SimpleSkinSubmesh submesh in this.Submeshes)
