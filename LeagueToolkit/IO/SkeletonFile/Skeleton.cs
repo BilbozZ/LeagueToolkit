@@ -204,12 +204,8 @@ namespace LeagueToolkit.IO.SkeletonFile
                 bw.Write(jointIndicesOffset);
                 bw.Write(influencesOffset);
 
-                long nameOffsetOffset = bw.BaseStream.Position;
-                bw.Write(0); //Name offset
-
-                long assetNameOffsetOffset = bw.BaseStream.Position;
-                bw.Write(0); //Asset Name offset
-
+                bw.Write(jointNamesOffset);
+                bw.Write(jointNamesOffset);
                 bw.Write(jointNamesOffset);
                 bw.Write(0xFFFFFFFF); //Write reserved offset field
                 bw.Write(0xFFFFFFFF); //Write reserved offset field
@@ -223,8 +219,15 @@ namespace LeagueToolkit.IO.SkeletonFile
                 {
                     jointNameOffsets.Add(i, (int)bw.BaseStream.Position);
 
+                    long nameStartPosition = bw.BaseStream.Position;
                     bw.Write(Encoding.ASCII.GetBytes(this.Joints[i].Name));
                     bw.Write((byte)0);
+
+                    // ensure names with blocks of four bytes
+                    while ((bw.BaseStream.Position - nameStartPosition) % 4 != 0)
+                    {
+                        bw.Write((byte)0);
+                    }
                 }
 
                 bw.Seek(jointsOffset, SeekOrigin.Begin);
@@ -242,30 +245,12 @@ namespace LeagueToolkit.IO.SkeletonFile
                 bw.Seek(jointIndicesOffset, SeekOrigin.Begin);
                 foreach (SkeletonJoint joint in this.Joints)
                 {
+                    bw.Write((int)joint.ID);
                     bw.Write(Cryptography.ElfHash(joint.Name));
-                    bw.Write((ushort)0);
-                    bw.Write(joint.ID);
                 }
 
-                // Write Name
-                long nameOffset = bw.BaseStream.Position;
-                bw.Write(Encoding.ASCII.GetBytes(this.Name));
-                bw.Write((byte)0);
-
-                // Write Asset Name
-                long assetNameOffset = bw.BaseStream.Position;
-                bw.Write(Encoding.ASCII.GetBytes(this.Name));
-                bw.Write((byte)0);
-
-                // Write Name offset to header
-                bw.BaseStream.Seek(nameOffsetOffset, SeekOrigin.Begin);
-                bw.Write((int)nameOffset);
-
-                // Write Asset Name offset to header
-                bw.BaseStream.Seek(assetNameOffsetOffset, SeekOrigin.Begin);
-                bw.Write((int)assetNameOffset);
-
-                uint fileSize = (uint)bw.BaseStream.Position - 4;
+                bw.BaseStream.Seek(0, SeekOrigin.End);
+                uint fileSize = (uint)bw.BaseStream.Position;
                 bw.BaseStream.Seek(0, SeekOrigin.Begin);
                 bw.Write(fileSize);
             }
